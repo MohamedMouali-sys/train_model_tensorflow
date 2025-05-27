@@ -10,30 +10,34 @@ from keras.models import Model
 from keras.layers import Dense, GlobalAveragePooling2D, Dropout, BatchNormalization
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from sklearn.utils.class_weight import compute_class_weight
 import tensorflow as tf
 
 # Répertoires d'images
-train_dir = "/content/drive/MyDrive/CNN_PROJECT/CNN_binary_classification/train"
-test_dir = "/content/drive/MyDrive/CNN_PROJECT/CNN_binary_classification/test"
-val_dir = "/content/drive/MyDrive/CNN_PROJECT/CNN_binary_classification/valid"
+train_dir = "/kaggle/input/breast-dataset-cancer/train"
+test_dir = "/kaggle/input/breast-dataset-cancer/test"
+val_dir = "/kaggle/input/breast-dataset-cancer/val"
 
 img_size = 224
 
 # Chargement des images
 def load_images_labels(directory):
-    images, labels = []
+    images = []
+    labels = []
+    label_map = {'Benign': 0, 'Malignant': 1}
     print(f"Chargement des images depuis : {directory}")
-    for label in ['0', '1']:
+    for label in label_map:
         path = os.path.join(directory, label)
         print(f"  → Classe {label} : {len(os.listdir(path))} images")
         for file in os.listdir(path):
-            img = cv2.imread(os.path.join(path, file), cv2.IMREAD_GRAYSCALE)
-            img = cv2.resize(img, (img_size, img_size))
-            img_rgb = cv2.merge([img]*3)
-            images.append(img_rgb)
-            labels.append(int(label))
+            img_path = os.path.join(path, file)
+            img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+            if img is not None:
+                img = cv2.resize(img, (img_size, img_size))
+                img_rgb = cv2.merge([img]*3)
+                images.append(img_rgb)
+                labels.append(label_map[label])
     return np.array(images) / 255.0, np.array(labels)
 
 print("Étape 1 : Chargement des jeux de données...")
